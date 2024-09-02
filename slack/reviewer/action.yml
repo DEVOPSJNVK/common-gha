@@ -4,6 +4,9 @@ inputs:
   channel_id:
     description: "Channel ID of the slack group"
     required: true
+secrets:
+  SLACK_BOT_TOKEN:
+    description: "Bot token"
 
 runs:
   using: "composite"
