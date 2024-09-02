@@ -53,4 +53,4 @@ runs:
           ]
         }
     env:
-      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
