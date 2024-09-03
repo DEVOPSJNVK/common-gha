@@ -40,7 +40,7 @@ runs:
               "type": "section",
               "fields": [
                 { "type": "mrkdwn", "text": "*Author:*" },
-                { "type": "mrkdwn", "text": "${{ github.actor }}" },
+                { "type": "mrkdwn", "text": "${{ github.event.pull_request.base.user.name }}" },
                 { "type": "mrkdwn", "text": "*Basebranch:*" },
                 { "type": "mrkdwn", "text": "${{ github.event.pull_request.base.ref }}" },
                 { "type": "mrkdwn", "text": "*Headbranch:*" },
