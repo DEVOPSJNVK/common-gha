@@ -18,7 +18,6 @@ runs:
       channel-id: '${{ inputs.channel_id }}'
       payload: |
         {
-          "channel": "${{inputs.channel_id}}",
           "text": "GithubAction通知",
           "blocks": [
             {
