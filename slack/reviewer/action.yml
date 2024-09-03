@@ -33,14 +33,14 @@ runs:
               "type": "section",
               "text": {
                 "type": "mrkdwn",
-                "text": "<https://github.com/test|It is a test"
+                "text": "<${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}>"
               }
             },
             {
               "type": "section",
               "fields": [
                 { "type": "mrkdwn", "text": "*Author:*" },
-                { "type": "mrkdwn", "text": "naveen" },
+                { "type": "mrkdwn", "text": "${{ github.event.pull_request.user.name }" },
                 { "type": "mrkdwn", "text": "*Basebranch:*" },
                 { "type": "mrkdwn", "text": "${{ github.event.pull_request.base.ref }}" },
                 { "type": "mrkdwn", "text": "*Headbranch:*" },
