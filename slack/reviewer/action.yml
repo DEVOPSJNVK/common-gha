@@ -42,11 +42,11 @@ runs:
                 { "type": "mrkdwn", "text": "*Author:*" },
                 { "type": "mrkdwn", "text": "naveen" },
                 { "type": "mrkdwn", "text": "*Basebranch:*" },
-                { "type": "mrkdwn", "text": "tri/dev/df" },
+                { "type": "mrkdwn", "text": "${{ github.ref_name }}" },
                 { "type": "mrkdwn", "text": "*Headbranch:*" },
                 {
                   "type": "mrkdwn",
-                  "text": "${{GITHUB_REF}}"
+                  "text": "feat/userproject/add-policy-mail-template"
                 }
               ]
             }
