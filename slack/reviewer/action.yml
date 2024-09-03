@@ -8,6 +8,9 @@ inputs:
   SLACK_BOT_TOKEN:
     description: "Bot token"
 
+  GITHUB_TOKEN:
+    description: "Github Token"
+
 runs:
   using: "composite"
   steps:
@@ -26,7 +29,7 @@ runs:
         echo "Fetching email for reviewer: $login"
 
         # Fetch the GitHub user's email
-        email=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+        email=$(curl -s -H "Authorization: token ${{ inputs.GITHUB_TOKEN }}" \
           "https://api.github.com/users/$login" | jq -r '.email')
         
         if [ "$email" != "null" ]; then
