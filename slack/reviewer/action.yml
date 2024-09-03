@@ -15,7 +15,7 @@ runs:
     shell: bash
     run: |
       echo "Requested Reviewers:"
-      for reviewer in ${{ toJSON(github.event.pull_request.requested_reviewers) }}; do
+      for reviewer in (${{ toJSON(github.event.pull_request.requested_reviewers) }} | jq -c '.[]'); do
         echo "Reviewer Login: $(echo $reviewer | jq -r '.login')"
         echo "Reviewer Profile: $(echo $reviewer | jq -r '.html_url')"
       done
