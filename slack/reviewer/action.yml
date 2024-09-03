@@ -46,7 +46,7 @@ runs:
                 { "type": "mrkdwn", "text": "*Headbranch:*" },
                 {
                   "type": "mrkdwn",
-                  "text": "feat/userproject/add-policy-mail-template"
+                  "text": "${{ github.event.pull_request.head.ref }}"
                 }
               ]
             }
