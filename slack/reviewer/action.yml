@@ -14,10 +14,17 @@ runs:
   - name: Get Requested Reviewers
     shell: bash
     run: |
-      echo "Requested Reviewers:"
-      for reviewer in (${{ toJSON(github.event.pull_request.requested_reviewers) }} | jq -c '.[]'); do
-        echo "Reviewer Login: $(echo $reviewer | jq -r '.login')"
-        echo "Reviewer Profile: $(echo $reviewer | jq -r '.html_url')"
+      # echo "Requested Reviewers:"
+      # for reviewer in (${{ toJSON(github.event.pull_request.requested_reviewers) }} | jq -c '.[]'); do
+      #   echo "Reviewer Login: $(echo $reviewer | jq -r '.login')"
+      #   echo "Reviewer Profile: $(echo $reviewer | jq -r '.html_url')"
+      # done
+      reviewers_json=${{ toJSON(github.event.pull_request.requested_reviewers) }}
+      echo "$reviewers_json" | jq -c '.[]' | while read -r reviewer; do
+      login=$(echo "$reviewer" | jq -r '.login')
+      profile_url=$(echo "$reviewer" | jq -r '.html_url')
+      echo "Reviewer Login: $login"
+      echo "Reviewer Profile: $profile_url"
       done
 
   - name: Posting to slack
