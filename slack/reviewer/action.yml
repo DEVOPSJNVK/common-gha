@@ -11,67 +11,46 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Posting to slack
-      id: slack
-      uses: slackapi/slack-github-action@v1.27.0
-      with:
-        channel-id: "${{ inputs.channel_id }}"
-        payload: |
-          {
-            "channel": "C07KJRJPMMJ",
-            "text": "GithubAction通知",
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "<@U07KDEU0DB7>"
-                }
-              },
-              {
-                "type": "header",
-                "text": {
-                  "type": "plain_text",
-                  "text": "PRレビューリクエスト"
-                }
-              },
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "<${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}>"
-                }
-              },
-              {
-                "type": "section",
-                "fields": [
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Author:*"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "${{ github.event.pull_request.user.name }}"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Basebranch:*"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "${{ github.event.pull_request.base.ref }}"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Headbranch:*"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "${{ github.event.pull_request.head.ref }}"
-                  }
-                ]
+  - name: Posting to slack
+    id: slack
+    uses: slackapi/slack-github-action@v1.27.0
+    with:
+      channel-id: '${{ inputs.channel_id }}'
+      payload: |
+        {
+          "channel": "C07KJRJPMMJ",
+          "text": "GithubAction通知",
+          "blocks": [
+            {
+              "type": "section",
+              "text": { "type": "mrkdwn", "text": "<@U07KDEU0DB7>" }
+            },
+            {
+              "type": "header",
+              "text": { "type": "plain_text", "text": "PRレビューリクエスト" }
+            },
+            {
+              "type": "section",
+              "text": {
+                "type": "mrkdwn",
+                "text": "<${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}>"
               }
-            ]
-          }
-      env:
-        SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
+            },
+            {
+              "type": "section",
+              "fields": [
+                { "type": "mrkdwn", "text": "*Author:*" },
+                { "type": "mrkdwn", "text": "${{ github.event.pull_request.user.name }}" },
+                { "type": "mrkdwn", "text": "*Basebranch:*" },
+                { "type": "mrkdwn", "text": "${{ github.event.pull_request.base.ref }}" },
+                { "type": "mrkdwn", "text": "*Headbranch:*" },
+                {
+                  "type": "mrkdwn",
+                  "text": "${{ github.event.pull_request.head.ref }}"
+                }
+              ]
+            }
+          ]
+        }
+    env:
+      SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
