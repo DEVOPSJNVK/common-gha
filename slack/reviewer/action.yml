@@ -11,13 +11,13 @@ inputs:
 runs:
   using: "composite"
   steps:
-  - name: Get Requested Reviewers
-    run: |
-      echo "Requested Reviewers:"
-      for reviewer in ${{ toJSON(github.event.pull_request.requested_reviewers) }}; do
-        echo "Reviewer Login: $(echo $reviewer | jq -r '.login')"
-        echo "Reviewer Profile: $(echo $reviewer | jq -r '.html_url')"
-      done
+  # - name: Get Requested Reviewers
+  #   run: |
+  #     echo "Requested Reviewers:"
+  #     for reviewer in ${{ toJSON(github.event.pull_request.requested_reviewers) }}; do
+  #       echo "Reviewer Login: $(echo $reviewer | jq -r '.login')"
+  #       echo "Reviewer Profile: $(echo $reviewer | jq -r '.html_url')"
+  #     done
 
   - name: Posting to slack
     id: slack
