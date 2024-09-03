@@ -51,7 +51,7 @@ runs:
                   },
                   {
                     "type": "mrkdwn",
-                    "text": "${{ github.event.pull_request.user.name }"
+                    "text": "${{ github.event.pull_request.user.name }}"
                   },
                   {
                     "type": "mrkdwn",
