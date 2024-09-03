@@ -14,14 +14,49 @@ runs:
   - name: Get Requested Reviewers
     shell: bash
     run: |
-      echo "Requested Reviewers:"
+      # Set the Slack API token (stored in GitHub secrets for security)
+      SLACK_API_TOKEN="${{ secrets.SLACK_BOT_TOKEN }}"
+      
+      # Initialize an empty string to hold the Slack user IDs
+      slack_user_ids=""
+
       reviewers='${{ toJSON(github.event.pull_request.requested_reviewers) }}'
       echo "$reviewers" | jq -c '.[]' | while read -r reviewer; do
         login=$(echo "$reviewer" | jq -r '.login')
-        profile_url=$(echo "$reviewer" | jq -r '.html_url')
-        echo "Reviewer Login: $login"
-        echo "Reviewer Profile: $profile_url"
+        echo "Fetching email for reviewer: $login"
+
+        # Fetch the GitHub user's email
+        email=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/users/$login" | jq -r '.email')
+        
+        if [ "$email" != "null" ]; then
+          echo "Reviewer Email: $email"
+
+          # Fetch Slack user ID by email
+          slack_user_id=$(curl -s -X POST \
+            -H "Authorization: Bearer $SLACK_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "{\"email\":\"$email\"}" \
+            "https://slack.com/api/users.lookupByEmail" | jq -r '.user.id')
+
+          if [ "$slack_user_id" != "null" ]; then
+            echo "Slack User ID: $slack_user_id"
+            # Prepend '@' and append the Slack user ID to the list
+            slack_user_ids="${slack_user_ids}@${slack_user_id} "
+          else
+            echo "Slack User ID: Not found"
+          fi
+        else
+          echo "Reviewer Email: Not available"
+          echo "Slack User ID: Cannot be retrieved without email"
+        fi
       done
+
+      # Trim trailing whitespace and output the final list of Slack user IDs with @
+      slack_user_ids=$(echo "$slack_user_ids" | xargs)
+      echo "Final Slack User IDs: $slack_user_ids"
+
+      echo "SLACK_USER_IDS=$slack_user_ids" >> $GITHUB_ENV
 
   - name: Posting to slack
     id: slack
@@ -34,7 +69,7 @@ runs:
           "blocks": [
             {
               "type": "section",
-              "text": { "type": "mrkdwn", "text": "<@U07KDEU0DB7>" }
+              "text": { "type": "mrkdwn", "text": "<${{env.SLACK_USER_IDS}}>" }
             },
             {
               "type": "header",
