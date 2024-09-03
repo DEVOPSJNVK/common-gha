@@ -42,7 +42,7 @@ runs:
                 { "type": "mrkdwn", "text": "*Author:*" },
                 { "type": "mrkdwn", "text": "naveen" },
                 { "type": "mrkdwn", "text": "*Basebranch:*" },
-                { "type": "mrkdwn", "text": "${{ github.ref }}" },
+                { "type": "mrkdwn", "text": "${{ github.event.pull_request.base.ref }}" },
                 { "type": "mrkdwn", "text": "*Headbranch:*" },
                 {
                   "type": "mrkdwn",
