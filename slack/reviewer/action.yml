@@ -13,8 +13,6 @@ inputs:
   SLACK_BOT_TOKEN:
     description: "Bot token"
 
-  GITHUB_TOKEN:
-    description: "Github Token"
 
 runs:
   using: "composite"
