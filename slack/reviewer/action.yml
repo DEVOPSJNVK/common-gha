@@ -25,29 +25,31 @@ runs:
       # Initialize an empty string to hold the Slack user IDs
       SLACK_IDS_LIST="Hi"
 
-      SLACK_IDS_JSON="$(cat ${{inputs.slack_ids_file_path}})"
-      echo $SLACK_IDS_JSON
+      SLACK_IDS_JSON="$(cat "${{inputs.slack_ids_file_path}}")"
+      echo "$SLACK_IDS_JSON"
 
       reviewers='${{ toJSON(github.event.pull_request.requested_reviewers) }}'
-      echo $reviewers
+      echo "$reviewers"
       METHOD="reviewRequest"
+
+      # Use a while loop to process each reviewer
       echo "$reviewers" | jq -c '.[]' | while read -r reviewer; do
         login=$(echo "$reviewer" | jq -r '.login')
 
         # Getting Slack ID
-        if $(echo ${SLACK_IDS_JSON} | jq "keys | any(. == \"${login}\")"); then
+        if echo "${SLACK_IDS_JSON}" | jq "keys | any(. == \"${login}\")"; then
 
-          METHOD_ENABLED=$(echo ${SLACK_IDS_JSON} | jq -r .\"${login}\".\"${METHOD}\")
-          echo $METHOD_ENABLED
-          if "${METHOD_ENABLED}"; then
-            ID=$(echo ${SLACK_IDS_JSON} | jq -r .\"${login}\".\"id\")
+          METHOD_ENABLED=$(echo "${SLACK_IDS_JSON}" | jq -r .\"${login}\".\"${METHOD}\")
+          echo "$METHOD_ENABLED"
+
+          if [ "$METHOD_ENABLED" = "true" ]; then
+            ID=$(echo "${SLACK_IDS_JSON}" | jq -r .\"${login}\".\"id\")
             SLACK_IDS_LIST="${SLACK_IDS_LIST}@${ID} "
           fi
         fi
       done
 
       # Trim trailing whitespace and output the final list of Slack user IDs with @
-      echo "Here $SLACK_IDS_LIST"
       SLACK_IDS_LIST=$(echo "$SLACK_IDS_LIST" | xargs)
       echo "Final Slack User IDs: $SLACK_IDS_LIST"
 
