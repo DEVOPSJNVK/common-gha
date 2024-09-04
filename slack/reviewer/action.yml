@@ -25,29 +25,25 @@ runs:
       # Initialize an empty string to hold the Slack user IDs
       SLACK_IDS_LIST="Hi"
 
+      # Load the Slack IDs JSON
       SLACK_IDS_JSON="$(cat "${{inputs.slack_ids_file_path}}")"
       echo "$SLACK_IDS_JSON"
 
+      # Load the reviewers JSON
       reviewers='${{ toJSON(github.event.pull_request.requested_reviewers) }}'
       echo "$reviewers"
       METHOD="reviewRequest"
 
       # Use a for loop to process each reviewer
-      for reviewer in $(echo "$reviewers" | jq -c '.[] | @base64'); do
-        _jq() {
-          echo "${reviewer}" | base64 --decode | jq -r "${1}"
-        }
-
-        login=$(_jq '.login')
-
+      for reviewer in $(echo "$reviewers" | jq -r '.[].login'); do
         # Getting Slack ID
-        if echo "${SLACK_IDS_JSON}" | jq "keys | any(. == \"${login}\")"; then
+        if echo "${SLACK_IDS_JSON}" | jq "keys | any(. == \"${reviewer}\")"; then
 
-          METHOD_ENABLED=$(echo "${SLACK_IDS_JSON}" | jq -r .\"${login}\".\"${METHOD}\")
+          METHOD_ENABLED=$(echo "${SLACK_IDS_JSON}" | jq -r .\"${reviewer}\".\"${METHOD}\")
           echo "$METHOD_ENABLED"
 
           if [ "$METHOD_ENABLED" = "true" ]; then
-            ID=$(echo "${SLACK_IDS_JSON}" | jq -r .\"${login}\".\"id\")
+            ID=$(echo "${SLACK_IDS_JSON}" | jq -r .\"${reviewer}\".\"id\")
             SLACK_IDS_LIST="${SLACK_IDS_LIST}@${ID} "
           fi
         fi
