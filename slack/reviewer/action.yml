@@ -32,9 +32,13 @@ runs:
       echo "$reviewers"
       METHOD="reviewRequest"
 
-      # Use a while loop to process each reviewer
-      echo "$reviewers" | jq -c '.[]' | while read -r reviewer; do
-        login=$(echo "$reviewer" | jq -r '.login')
+      # Use a for loop to process each reviewer
+      for reviewer in $(echo "$reviewers" | jq -c '.[] | @base64'); do
+        _jq() {
+          echo "${reviewer}" | base64 --decode | jq -r "${1}"
+        }
+
+        login=$(_jq '.login')
 
         # Getting Slack ID
         if echo "${SLACK_IDS_JSON}" | jq "keys | any(. == \"${login}\")"; then
@@ -49,6 +53,10 @@ runs:
         fi
         echo $SLACK_IDS_LIST
       done
+
+      # Trim trailing whitespace and output the final list of Slack user IDs with @
+      SLACK_IDS_LIST=$(echo "$SLACK_IDS_LIST" | xargs)
+      echo "Final Slack User IDs: $SLACK_IDS_LIST"
 
       echo "SLACK_IDS_LIST=$SLACK_IDS_LIST" >> $GITHUB_ENV
 
