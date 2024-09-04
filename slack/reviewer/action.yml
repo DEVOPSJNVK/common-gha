@@ -23,7 +23,7 @@ runs:
     shell: bash
     run: |
       # Initialize an empty string to hold the Slack user IDs
-      SLACK_IDS_LIST=""
+      SLACK_IDS_LIST="Hi"
 
       SLACK_IDS_JSON="$(cat ${{inputs.slack_ids_file_path}})"
       echo $SLACK_IDS_JSON
