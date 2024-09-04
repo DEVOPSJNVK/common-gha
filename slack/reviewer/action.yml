@@ -46,13 +46,9 @@ runs:
             ID=$(echo "${SLACK_IDS_JSON}" | jq -r .\"${login}\".\"id\")
             SLACK_IDS_LIST="${SLACK_IDS_LIST}@${ID} "
           fi
-          echo $SLACK_IDS_LIST
         fi
+        echo $SLACK_IDS_LIST
       done
-
-      # Trim trailing whitespace and output the final list of Slack user IDs with @
-      SLACK_IDS_LIST=$(echo "$SLACK_IDS_LIST" | xargs)
-      echo "Final Slack User IDs: $SLACK_IDS_LIST"
 
       echo "SLACK_IDS_LIST=$SLACK_IDS_LIST" >> $GITHUB_ENV
 
