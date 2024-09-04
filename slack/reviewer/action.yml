@@ -5,6 +5,11 @@ inputs:
     description: "Channel ID of the slack group"
     required: true
 
+  slack_ids_file_path:
+    description: "Path of slack ids file"
+    required: false
+    default: ".github/slack-ids-with-options.json"
+
   SLACK_BOT_TOKEN:
     description: "Bot token"
 
@@ -17,49 +22,31 @@ runs:
   - name: Get Requested Reviewers
     shell: bash
     run: |
-      # Set the Slack API token (stored in GitHub secrets for security)
-      SLACK_API_TOKEN="${{ inputs.SLACK_BOT_TOKEN }}"
-      
       # Initialize an empty string to hold the Slack user IDs
-      slack_user_ids=""
+      SLACK_IDS_LIST=""
+
+      SLACK_IDS_JSON="$(cat ${{inputs.slack_ids_file_path}})"
 
       reviewers='${{ toJSON(github.event.pull_request.requested_reviewers) }}'
       echo "$reviewers" | jq -c '.[]' | while read -r reviewer; do
         login=$(echo "$reviewer" | jq -r '.login')
-        echo "Fetching email for reviewer: $login"
 
-        # Fetch the GitHub user's email
-        email=$(curl -s -H "Authorization: token ${{ inputs.GITHUB_TOKEN }}" \
-          "https://api.github.com/users/$login" | jq -r '.email')
-        
-        if [ "$email" != "null" ]; then
-          echo "Reviewer Email: $email"
+        # Getting Slack ID
+        if $(echo ${SLACK_IDS_JSON} | jq "keys | any(. == \"${login}\")"); then
 
-          # Fetch Slack user ID by email
-          slack_user_id=$(curl -s -X POST \
-            -H "Authorization: Bearer $SLACK_API_TOKEN" \
-            -H "Content-Type: application/json" \
-            --data "{\"email\":\"$email\"}" \
-            "https://slack.com/api/users.lookupByEmail" | jq -r '.user.id')
-
-          if [ "$slack_user_id" != "null" ]; then
-            echo "Slack User ID: $slack_user_id"
-            # Prepend '@' and append the Slack user ID to the list
-            slack_user_ids="${slack_user_ids}@${slack_user_id} "
-          else
-            echo "Slack User ID: Not found"
+          METHOD_ENABLED=$(echo ${SLACK_IDS_JSON} | jq -r .\"${login}\".\"${METHOD}\")
+          if "${METHOD_ENABLED}"; then
+            ID=$(echo ${SLACK_IDS_JSON} | jq -r .\"${login}\".\"id\")
+            SLACK_IDS_LIST="${SLACK_IDS_LIST}@${ID} "
           fi
-        else
-          echo "Reviewer Email: Not available"
-          echo "Slack User ID: Cannot be retrieved without email"
         fi
       done
 
       # Trim trailing whitespace and output the final list of Slack user IDs with @
-      slack_user_ids=$(echo "$slack_user_ids" | xargs)
-      echo "Final Slack User IDs: $slack_user_ids"
+      SLACK_IDS_LIST=$(echo "$SLACK_IDS_LIST" | xargs)
+      echo "Final Slack User IDs: $SLACK_IDS_LIST"
 
-      echo "SLACK_USER_IDS=$slack_user_ids" >> $GITHUB_ENV
+      echo "SLACK_IDS_LIST=$SLACK_IDS_LIST" >> $GITHUB_ENV
 
   - name: Posting to slack
     id: slack
@@ -72,7 +59,7 @@ runs:
           "blocks": [
             {
               "type": "section",
-              "text": { "type": "mrkdwn", "text": "<${{env.SLACK_USER_IDS}}>" }
+              "text": { "type": "mrkdwn", "text": "<${{env.SLACK_IDS_LIST}}>" }
             },
             {
               "type": "header",
