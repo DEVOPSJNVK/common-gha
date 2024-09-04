@@ -29,6 +29,7 @@ runs:
       echo $SLACK_IDS_JSON
 
       reviewers='${{ toJSON(github.event.pull_request.requested_reviewers) }}'
+      echo $reviewers
       METHOD="reviewRequest"
       echo "$reviewers" | jq -c '.[]' | while read -r reviewer; do
         login=$(echo "$reviewer" | jq -r '.login')
