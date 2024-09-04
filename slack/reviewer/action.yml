@@ -30,7 +30,7 @@ runs:
 
       # Load the reviewers JSON
       reviewers='${{ toJSON(github.event.pull_request.requested_reviewers) }}'
-      
+
       METHOD="reviewRequest"
 
       # Use a for loop to process each reviewer
@@ -43,7 +43,7 @@ runs:
 
           if [ "$METHOD_ENABLED" = "true" ]; then
             ID=$(echo "${SLACK_IDS_JSON}" | jq -r .\"${reviewer}\".\"id\")
-            SLACK_IDS_LIST="${SLACK_IDS_LIST}@${ID} "
+            SLACK_IDS_LIST="${SLACK_IDS_LIST}<@${ID}> "
           fi
         fi
         echo $SLACK_IDS_LIST
