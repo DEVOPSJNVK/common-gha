@@ -60,7 +60,7 @@ runs:
       channel-id: '${{ inputs.channel_id }}'
       payload: |
         {
-          "text": "GithubAction通知",
+          "text": "Github Actions Notifications",
           "blocks": [
             {
               "type": "section",
@@ -68,7 +68,7 @@ runs:
             },
             {
               "type": "header",
-              "text": { "type": "plain_text", "text": "PRレビューリクエスト" }
+              "text": { "type": "plain_text", "text": "Pull Request Review" }
             },
             {
               "type": "section",
