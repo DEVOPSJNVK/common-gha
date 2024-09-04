@@ -19,81 +19,81 @@ inputs:
 runs:
   using: "composite"
   steps:
-  - name: Get Requested Reviewers
-    shell: bash
-    run: |
-      # Initialize an empty string to hold the Slack user IDs
-      SLACK_IDS_LIST="Hi"
+    - name: Get Requested Reviewers
+      shell: bash
+      run: |
+        # Initialize an empty string to hold the Slack user IDs
+        SLACK_IDS_LIST="Hi"
 
-      SLACK_IDS_JSON="$(cat "${{inputs.slack_ids_file_path}}")"
-      echo "$SLACK_IDS_JSON"
+        SLACK_IDS_JSON="$(cat "${{inputs.slack_ids_file_path}}")"
+        echo "$SLACK_IDS_JSON"
 
-      reviewers='${{ toJSON(github.event.pull_request.requested_reviewers) }}'
-      echo "$reviewers"
-      METHOD="reviewRequest"
+        reviewers='${{ toJSON(github.event.pull_request.requested_reviewers) }}'
+        echo "$reviewers"
+        METHOD="reviewRequest"
+        echo $($reviewers" | jq -c '.[]')
+        # Use a while loop to process each reviewer
+        echo "$reviewers" | jq -c '.[]' | while read -r reviewer; do
+          login=$(echo "$reviewer" | jq -r '.login')
 
-      # Use a while loop to process each reviewer
-      echo "$reviewers" | jq -c '.[]' | while read -r reviewer; do
-        login=$(echo "$reviewer" | jq -r '.login')
+          # Getting Slack ID
+          if echo "${SLACK_IDS_JSON}" | jq "keys | any(. == \"${login}\")"; then
 
-        # Getting Slack ID
-        if echo "${SLACK_IDS_JSON}" | jq "keys | any(. == \"${login}\")"; then
+            METHOD_ENABLED=$(echo "${SLACK_IDS_JSON}" | jq -r .\"${login}\".\"${METHOD}\")
+            echo "$METHOD_ENABLED"
 
-          METHOD_ENABLED=$(echo "${SLACK_IDS_JSON}" | jq -r .\"${login}\".\"${METHOD}\")
-          echo "$METHOD_ENABLED"
-
-          if [ "$METHOD_ENABLED" = "true" ]; then
-            ID=$(echo "${SLACK_IDS_JSON}" | jq -r .\"${login}\".\"id\")
-            SLACK_IDS_LIST="${SLACK_IDS_LIST}@${ID} "
+            if [ "$METHOD_ENABLED" = "true" ]; then
+              ID=$(echo "${SLACK_IDS_JSON}" | jq -r .\"${login}\".\"id\")
+              SLACK_IDS_LIST="${SLACK_IDS_LIST}@${ID} "
+            fi
           fi
-        fi
-      done
+        done
 
-      # Trim trailing whitespace and output the final list of Slack user IDs with @
-      SLACK_IDS_LIST=$(echo "$SLACK_IDS_LIST" | xargs)
-      echo "Final Slack User IDs: $SLACK_IDS_LIST"
+        # Trim trailing whitespace and output the final list of Slack user IDs with @
+        SLACK_IDS_LIST=$(echo "$SLACK_IDS_LIST" | xargs)
+        echo "Final Slack User IDs: $SLACK_IDS_LIST"
 
-      echo "SLACK_IDS_LIST=$SLACK_IDS_LIST" >> $GITHUB_ENV
+        echo "SLACK_IDS_LIST=$SLACK_IDS_LIST" >> $GITHUB_ENV
 
-  - name: Posting to slack
-    id: slack
-    uses: slackapi/slack-github-action@v1.27.0
-    with:
-      channel-id: '${{ inputs.channel_id }}'
-      payload: |
-        {
-          "text": "GithubAction通知",
-          "blocks": [
-            {
-              "type": "section",
-              "text": { "type": "mrkdwn", "text": "<${{env.SLACK_IDS_LIST}}>" }
-            },
-            {
-              "type": "header",
-              "text": { "type": "plain_text", "text": "PRレビューリクエスト" }
-            },
-            {
-              "type": "section",
-              "text": {
-                "type": "mrkdwn",
-                "text": "<${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}>"
-              }
-            },
-            {
-              "type": "section",
-              "fields": [
-                { "type": "mrkdwn", "text": "*Author:*" },
-                { "type": "mrkdwn", "text": "${{ github.actor }}" },
-                { "type": "mrkdwn", "text": "*Basebranch:*" },
-                { "type": "mrkdwn", "text": "${{ github.event.pull_request.base.ref }}" },
-                { "type": "mrkdwn", "text": "*Headbranch:*" },
-                {
+    - name: Posting to slack
+      id: slack
+      uses: slackapi/slack-github-action@v1.27.0
+      with:
+        channel-id: "${{ inputs.channel_id }}"
+        payload: |
+          {
+            "text": "GithubAction通知",
+            "blocks": [
+              {
+                "type": "section",
+                "text": { "type": "mrkdwn", "text": "<${{env.SLACK_IDS_LIST}}>" }
+              },
+              {
+                "type": "header",
+                "text": { "type": "plain_text", "text": "PRレビューリクエスト" }
+              },
+              {
+                "type": "section",
+                "text": {
                   "type": "mrkdwn",
-                  "text": "${{ github.event.pull_request.head.ref }}"
+                  "text": "<${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}>"
                 }
-              ]
-            }
-          ]
-        }
-    env:
-      SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
+              },
+              {
+                "type": "section",
+                "fields": [
+                  { "type": "mrkdwn", "text": "*Author:*" },
+                  { "type": "mrkdwn", "text": "${{ github.actor }}" },
+                  { "type": "mrkdwn", "text": "*Basebranch:*" },
+                  { "type": "mrkdwn", "text": "${{ github.event.pull_request.base.ref }}" },
+                  { "type": "mrkdwn", "text": "*Headbranch:*" },
+                  {
+                    "type": "mrkdwn",
+                    "text": "${{ github.event.pull_request.head.ref }}"
+                  }
+                ]
+              }
+            ]
+          }
+      env:
+        SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
