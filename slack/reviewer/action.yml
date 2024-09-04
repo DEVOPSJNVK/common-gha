@@ -31,7 +31,7 @@ runs:
       reviewers='${{ toJSON(github.event.pull_request.requested_reviewers) }}'
       echo "$reviewers"
       METHOD="reviewRequest"
-      echo $($reviewers" | jq -c '.[]')
+
       # Use a while loop to process each reviewer
       echo "$reviewers" | jq -c '.[]' | while read -r reviewer; do
         login=$(echo "$reviewer" | jq -r '.login')
